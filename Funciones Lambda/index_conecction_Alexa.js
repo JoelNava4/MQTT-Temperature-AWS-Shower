@@ -22,7 +22,7 @@ const ShowerParams = {
     TurnOnPayloadHeater: '{"state": {"desired": {"state_valve": 0, "state_cooler": 0, "state_heater": 1}}}',
     TurnOffPayloadHeater: '{"state": {"desired": {"state_heater": 0}}}',
 
-    ShadowParams: { thingName: 'shower_0001' },
+    ShadowParams: { thingName: 'shower_0001' },
 };
 
 function getShadowPromise(params) {
@@ -44,7 +44,7 @@ const LaunchRequestHandler = {
     },
     handle(handlerInput) {
 
-        const speakOutput = 'Bienvenido a tu objeto inteligente eje, ¿Qué deseas hacer?';
+        const speakOutput = 'Se bienvenido, ¿Qué deseas hacer?';
 
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -385,6 +385,84 @@ const StateTemperatureWaterIntentHandler = {
     }
 };
 
+const PrepareShowerIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'PrepareShowerIntent';
+    },
+    handle(handlerInput) {
+
+        var speakOutput = "Error";
+        speakOutput = 'Como deseas que este el agua?. Fria, Caliente o segun la temperatura ambiente';
+
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(speakOutput)
+            .getResponse();
+    }
+};
+
+function activateHeater() {
+    const params = {
+        thingName:ShowerParams.thingName,
+        payload: ShowerParams.TurnOnPayloadHeater
+    };
+    
+    IotData.updateThingShadow(params, (err, data) => {
+        if (err) {
+            console.log('Error al encender el calentador:', err);
+        } else {
+            console.log('Calentador activado:', data);
+        }
+    });
+}
+
+function activateCooler() {
+    const params = {
+        thingName:ShowerParams.thingName,
+        payload: ShowerParams.TurnOnPayloadCooler
+    };
+    IotData.updateThingShadow(params, (err, data) => {
+        if (err) {
+            console.log('Error al encender el enfriador:', err);
+        } else {
+            console.log('Enfriador activado:', data);
+        }
+    });
+}
+
+const WaterAmbientTemperatureIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'WaterAmbientTemperatureIntent';
+    },
+    async handle(handlerInput) {
+        var temperature = 'unknown';
+        await getShadowPromise(ShowerParams.ShadowParams).then((result) => temperature = result.state.reported.temperature_enviroment);
+        let speakOutput = '';
+        
+        if (isNaN(temperature)) {
+            speakOutput = 'Hubo un problema al obtener la temperatura ambiente. Intenta nuevamente más tarde.';
+        } else {
+            speakOutput = 'Estoy acondicionando el agua segun la temperatura ambiente. ';
+            const testTemperature = parseFloat(temperature);
+            if (testTemperature < 21.0) {
+                speakOutput += ' El calentador se ha encendido para alcanzar la temperatura adecuada para el agua.';
+                activateHeater();
+
+            } else if (testTemperature >= 21.0) {
+                speakOutput += ' El enfriador se ha encendido para alcanzar la temperatura adecuada para el agua.';
+                activateCooler();
+            } 
+        }
+
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(speakOutput)
+            .getResponse();
+    }
+};
+
 const HelpIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -539,6 +617,8 @@ exports.handler = Alexa.SkillBuilders.custom()
         TurnOffHeaterIntentHandler,
         TurnOnVentiladorIntentHandler,
         TurnOffVentiladorIntentHandler,
+        PrepareShowerIntentHandler,
+        WaterAmbientTemperatureIntentHandler,
         IntentReflectorHandler)
     .addErrorHandlers(
         ErrorHandler)
