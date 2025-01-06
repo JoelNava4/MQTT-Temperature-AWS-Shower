@@ -1,16 +1,16 @@
 #ifndef WIFICONNECTION_H
 #define WIFICONNECTION_H
 
-#include <WiFi.h>
+#include <WiFiManager.h>
 
 class WiFiConnection {
   private:
-    const char* SSID;
-    const char* PASSWORD;
+    WiFiManager wifiManager;
 
   public:
-    WiFiConnection(const char* SSID, const char* PASSWORD);
+    WiFiConnection();
     void Connect();
 };
 
 #endif // WIFICONNECTION_H
+

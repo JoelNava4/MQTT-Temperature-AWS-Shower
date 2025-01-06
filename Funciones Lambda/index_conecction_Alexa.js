@@ -1,6 +1,7 @@
 const Alexa = require('ask-sdk-core');
 const AWS = require('aws-sdk');
 const IotData = new AWS.IotData({endpoint: 'a1wpqxeafukdx9-ats.iot.us-east-1.amazonaws.com'});
+const dynamoDB = new AWS.DynamoDB.DocumentClient();
 
 //const deviceName1 = Alexa.getSlotValue(handlerInput.requestEnvelope, 'deviceName');
 
@@ -9,7 +10,6 @@ const MotorParams = {
     thingName: 'motorTemperature',
     TurnOnPayload: '{"state": {"desired": {"builtInmotor": 1}}}',
     TurnOffPayload: '{"state": {"desired": {"builtInmotor": 0}}}',
-    ShadowParams: { thingName: 'motorTemperature' },
 };
 
 // Parámetros para el dispositivo shower_0001
@@ -24,9 +24,7 @@ const ShowerParams = {
     TurnOnPayloadHeater: '{"state": {"desired": {"state_valve": 0, "state_cooler": 0, "state_heater": 1}}}',
     TurnOffPayloadHeater: '{"state": {"desired": {"state_heater": 0}}}',
 
-    ShadowParams: { thingName: 'shower_0001' },
 };
-
 const SetDeviceIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -40,7 +38,7 @@ const SetDeviceIntentHandler = {
         sessionAttributes.deviceName = deviceName;
         handlerInput.attributesManager.setSessionAttributes(sessionAttributes);
 
-        const speakOutput = `Dispositivo configurado a ${deviceName}. ¿Qué deseas hacer ahora?`;
+        const speakOutput = Dispositivo configurado a ${deviceName}. ¿Qué deseas hacer ahora?;
 
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -68,7 +66,86 @@ const LaunchRequestHandler = {
     },
     handle(handlerInput) {
 
-        const speakOutput = 'Se bienvenido, ¿Qué deseas hacer?';
+        const speakOutput = 'Se bienvenido xd, ¿Qué deseas hacer?';
+
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(speakOutput)
+            .getResponse();
+    }
+};
+/*
+//------------------------------------------------------------------
+const TurnOnVentiladorIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'TurnOnVentiladorIntent';
+    },
+    handle(handlerInput) {
+        const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+        const thingName = sessionAttributes.deviceName || MotorParams.thingName; // Usa el thingName almacenado o el predeterminado
+
+        const params = {
+            thingName:thingName,
+            payload: MotorParams.TurnOnPayload
+        };
+
+        var speakOutput = "Error";
+        IotData.updateThingShadow(params,(err, data) => {
+            if (err) console.log(err);
+        });
+      
+        speakOutput = 'Solicitaste encender el motor-ventilador!';
+
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(speakOutput)
+            .getResponse();
+    }
+};
+const TurnOffVentiladorIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'TurnOffVentiladorIntent';
+    },
+    handle(handlerInput) {
+        const params = {
+            thingName:MotorParams.thingName,
+            payload: MotorParams.TurnOffPayload
+        };
+
+        var speakOutput = "Error";
+        IotData.updateThingShadow(params,(err, data) => {
+            if (err) console.log(err);
+        });
+      
+        speakOutput = 'Solicitaste apagar el motor :)   !';
+
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(speakOutput)
+            .getResponse();
+    }
+};
+//----------------------------------------------------------------
+const TurnOnIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'TurnOnValveIntent';
+    },
+    handle(handlerInput) {
+        const params = {
+            thingName:ShowerParams.thingName,
+            payload: ShowerParams.TurnOnPayload
+        };
+
+        var speakOutput = "Error";
+        IotData.updateThingShadow(params,(err, data) => {
+            if (err) console.log(err);
+        });
+        
+
+        speakOutput = 'Solicitaste encender el valve!';
 
         return handlerInput.responseBuilder
             .speak(speakOutput)
@@ -77,14 +154,213 @@ const LaunchRequestHandler = {
     }
 };
 
-const StateTemperatureEnviromentIntentHandler = {
+const TurnOffIntentHandler = {
+    
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
-            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'StateTemperatureEnviromentIntent';
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'TurnOffValveIntent';
+    },
+    handle(handlerInput) {
+        const params = {
+            thingName:ShowerParams.thingName,
+            payload: ShowerParams.TurnOffPayload
+        };
+        var speakOutput = "Error";
+        IotData.updateThingShadow(params,(err, data) => {
+            if (err) console.log(err);
+        });
+      
+        speakOutput = 'Solicitaste apagar el valve!';
+
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(speakOutput)
+            .getResponse();
+    }
+};
+//---------------------------------------------------------------------
+const TurnOnCoolerIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'TurnOnCoolerIntent';
+    },
+    handle(handlerInput) {
+        const params = {
+            thingName:ShowerParams.thingName,
+            payload: ShowerParams.TurnOnPayloadCooler
+        };
+
+        var speakOutput = "Error";
+        IotData.updateThingShadow(params,(err, data) => {
+            if (err) console.log(err);
+        });
+      
+        speakOutput = 'Solicitaste encender el cooler!';
+
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(speakOutput)
+            .getResponse();
+    }
+};
+const TurnOffCoolerIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'TurnOffCoolerIntent';
+    },
+    handle(handlerInput) {
+        const params = {
+            thingName:ShowerParams.thingName,
+            payload: ShowerParams.TurnOffPayloadCooler
+        };
+
+        var speakOutput = "Error";
+        IotData.updateThingShadow(params,(err, data) => {
+            if (err) console.log(err);
+        });
+      
+        speakOutput = 'Solicitaste apagar el cooler!';
+
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(speakOutput)
+            .getResponse();
+    }
+};
+//-----------------------------------------------------------------------------
+const TurnOnHeaterIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'TurnOnHeaterIntent';
+    },
+    handle(handlerInput) {
+        const params = {
+            thingName:ShowerParams.thingName,
+            payload: ShowerParams.TurnOnPayloadHeater
+        };
+
+        var speakOutput = "Error";
+        IotData.updateThingShadow(params,(err, data) => {
+            if (err) console.log(err);
+        });
+      
+        speakOutput = 'Solicitaste encender el calentador!';
+
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(speakOutput)
+            .getResponse();
+    }
+};
+const TurnOffHeaterIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'TurnOffHeaterIntent';
+    },
+    handle(handlerInput) {
+        const params = {
+            thingName:ShowerParams.thingName,
+            payload: ShowerParams.TurnOffPayloadHeater
+        };
+
+        var speakOutput = "Error";
+        IotData.updateThingShadow(params,(err, data) => {
+            if (err) console.log(err);
+        });
+      
+        speakOutput = 'Solicitaste apagar el calentador!';
+
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(speakOutput)
+            .getResponse();
+    }
+};
+
+
+const StateIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'StateValveIntent';
+    },
+    async handle(handlerInput) {
+        var valve = 'unknown';
+        await getShadowPromise(ShowerParams.thingName).then((result) => valve = result.state.reported.state_valve);
+        console.log(valve);
+
+        var speakOutput = 'Error';
+        if (valve == 0) {
+            speakOutput = 'La valvula se encuentra apagada';
+        } else if (valve == 1) {
+            speakOutput = 'La valvula se encuentra encendida';
+        } else {
+            speakOutput = 'No se pudo consultar el estado de la motor, por favor intente más tarde';
+        }
+
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(speakOutput)
+            .getResponse();
+    }
+};
+const StateCoolerIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'StateCoolerIntent';
+    },
+    async handle(handlerInput) {
+        var cooler = 'unknown';
+        await getShadowPromise(ShowerParams.thingName).then((result) => cooler = result.state.reported.state_cooler);
+        console.log(cooler);
+
+        var speakOutput = 'Error';
+        if (cooler == 0) {
+            speakOutput = 'El enfriador se encuentra apagada';
+        } else if (cooler == 1) {
+            speakOutput = 'El enfriador se encuentra encendida';
+        } else {
+            speakOutput = 'No se pudo consultar el estado de la motor, por favor intente más tarde';
+        }
+
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(speakOutput)
+            .getResponse();
+    }
+};
+const StateHeaterIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'StateHeaterIntent';
+    },
+    async handle(handlerInput) {
+        var cooler = 'unknown';
+        await getShadowPromise(ShowerParams.thingName).then((result) => cooler = result.state.reported.state_heater);
+        console.log(cooler);
+
+        var speakOutput = 'Error';
+        if (cooler == 0) {
+            speakOutput = 'El calentador se encuentra apagada';
+        } else if (cooler == 1) {
+            speakOutput = 'El calentador se encuentra encendida';
+        } else {
+            speakOutput = 'No se pudo consultar el estado de la motor, por favor intente más tarde';
+        }
+
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(speakOutput)
+            .getResponse();
+    }
+};
+const StateIntentTemperatureHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'StateIntentTemperature';
     },
     async handle(handlerInput) {
         var temperature = 'unknown';
-        await getShadowPromise(ShowerParams.thingName).then((result) => temperature = result.state.reported.temperature_enviroment);
+        await getShadowPromise(ShowerParams.thingName).then((result) => temperature = result.state.reported.temperature);
         console.log(temperature);
 
         var speakOutput = 'la temperatura actual es de: ' + temperature + ' centigrados ';
@@ -97,6 +373,95 @@ const StateTemperatureEnviromentIntentHandler = {
     }
 };
 
+const StateTemperatureWaterIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'StateTemperatureWaterIntent';
+    },
+    async handle(handlerInput) {
+        var temperature = 'unknown';
+        await getShadowPromise(ShowerParams.thingName).then((result) => temperature = result.state.reported.temperature_water);
+        console.log(temperature);
+
+        var speakOutput = 'la temperatura actual del agua es de: ' + temperature + ' centigrados ';
+                
+
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(speakOutput)
+            .getResponse();
+    }
+};
+
+const PrepareShowerIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'PrepareShowerIntent';
+    },
+    handle(handlerInput) {
+
+        var speakOutput = "Error";
+        speakOutput = 'Como deseas que este el agua?. Fria, Caliente o segun la temperatura ambiente';
+
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(speakOutput)
+            .getResponse();
+    }
+};
+
+function activateHeater() {
+    const params = {
+        thingName:ShowerParams.thingName,
+        payload: ShowerParams.TurnOnPayloadHeater
+    };
+    
+    IotData.updateThingShadow(params, (err, data) => {
+        if (err) {
+            console.log('Error al encender el calentador:', err);
+        } else {
+            console.log('Calentador activado:', data);
+        }
+    });
+}
+
+function activateCooler() {
+    const params = {
+        thingName:ShowerParams.thingName,
+        payload: ShowerParams.TurnOnPayloadCooler
+    };
+    IotData.updateThingShadow(params, (err, data) => {
+        if (err) {
+            console.log('Error al encender el enfriador:', err);
+        } else {
+            console.log('Enfriador activado:', data);
+        }
+    });
+}
+
+*/
+const StateTemperatureEnviromentIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'StateTemperatureEnviromentIntent';
+    },
+    async handle(handlerInput) {
+        var temperature = 'unknown';
+        const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+        const thingName = sessionAttributes.deviceName || ShowerParams.thingName;
+        await getShadowPromise({thingName: thingName}).then((result) => temperature = result.state.reported.temperature_enviroment);
+        console.log(temperature);
+
+        var speakOutput = 'la temperatura actual es de: ' + temperature + ' centigrados ';
+
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(speakOutput)
+            .getResponse();
+    }
+
+    
+};
 const WaterAmbientTemperatureIntentHandler = {
     canHandle(handlerInput) {
         return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
@@ -576,7 +941,9 @@ const StateTemperatureWaterIntentHandler = {
     },
     async handle(handlerInput) {
         var temperature = 'unknown';
-        await getShadowPromise(ShowerParams.thingName).then((result) => temperature = result.state.reported.temperature_water);
+        const sessionAttributes = handlerInput.attributesManager.getSessionAttributes();
+        const thingName = sessionAttributes.deviceName || ShowerParams.thingName;
+        await getShadowPromise({thingName: thingName}).then((result) => temperature = result.state.reported.temperature_water);
         console.log(temperature);
 
         var speakOutput = 'la temperatura actual del agua es de: ' + temperature + ' centigrados ';
@@ -589,14 +956,105 @@ const StateTemperatureWaterIntentHandler = {
     }
 };
 
-
 /**
  * This handler acts as the entry point for your skill, routing all request and response
  * payloads to the handlers above. Make sure any new handlers or interceptors you've
  * defined are included below. The order matters - they're processed top to bottom 
  * */
 
+/*************************************** SHOWER  ***********************************************************************/
+const turnOnShowerHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'turnOnShowerIntent';
+    },
+    async handle(handlerInput) {
+        const skillId = handlerInput.requestEnvelope.context.System.application.applicationId;
+        const adviceName = handlerInput.requestEnvelope.request.intent.slots.deviceShower.resolutions.resolutionsPerAuthority[0].values[0].value.name;
 
+        if (!adviceName) {
+            const speakOutput = 'No pude identificar el dispositivo. Por favor, intenta nuevamente especificando el nombre del dispositivo.';
+            return handlerInput.responseBuilder.speak(speakOutput).getResponse();
+        }
+        const TurnOnPayload = '{"state": {"desired": {"state_valve": 1, "state_cooler": 0, "state_heater": 0}}}';
+        const dynamoParams = {
+            TableName: 'userAlexa', // Asegúrate de que el nombre de la tabla es correcto
+            Key: { userId: skillId}
+        };
+        try {
+            const data = await dynamoDB.get(dynamoParams).promise();
+            if (data.Item && data.Item.adviceName.includes(adviceName)) {
+                const params = {
+                    thingName: adviceName,
+                    payload: TurnOnPayload
+                };
+                await IotData.updateThingShadow(params).promise();
+                const speakOutput = El valve de ${adviceName} se ha encendido correctamente. ¿Qué más deseas hacer?;
+                return handlerInput.responseBuilder
+                    .speak(speakOutput)
+                    .reprompt(speakOutput) 
+                    .getResponse();
+            } else {
+                const speakOutput = No se encontró el dispositivo ${adviceName} asociado a tu cuenta.;
+                return handlerInput.responseBuilder
+                .speak(speakOutput)
+                .reprompt(speakOutput) // Repite la misma respuesta como reprompt
+                .getResponse();            }
+        } catch (err) {
+            console.error('Error al consultar DynamoDB o actualizar la sombra del dispositivo:', err);
+            const speakOutput = 'Hubo un error al intentar encender el ventilador. Intenta nuevamente.';
+            return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(speakOutput) // Repite la misma respuesta como reprompt
+            .getResponse();        }
+    }
+};
+const turnOffShowerHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'turnOffShowerIntent';
+    },
+    async handle(handlerInput) {
+        const skillId = handlerInput.requestEnvelope.context.System.application.applicationId;
+        const adviceName = handlerInput.requestEnvelope.request.intent.slots.deviceShower.resolutions.resolutionsPerAuthority[0].values[0].value.name;
+
+        if (!adviceName) {
+            const speakOutput = 'No pude identificar el dispositivo. Por favor, intenta nuevamente especificando el nombre del dispositivo.';
+            return handlerInput.responseBuilder.speak(speakOutput).getResponse();
+        }
+        const TurnOnPayload = '{"state": {"desired": {"state_valve": 0, "state_cooler": 0, "state_heater": 0}}}';
+        const dynamoParams = {
+            TableName: 'userAlexa', // Asegúrate de que el nombre de la tabla es correcto
+            Key: { userId: skillId}
+        };
+        try {
+            const data = await dynamoDB.get(dynamoParams).promise();
+            if (data.Item && data.Item.adviceName.includes(adviceName)) {
+                const params = {
+                    thingName: adviceName,
+                    payload: TurnOnPayload
+                };
+                await IotData.updateThingShadow(params).promise();
+                const speakOutput = El valve de ${adviceName} se ha encendido correctamente. ¿Qué más deseas hacer?;
+                return handlerInput.responseBuilder
+                    .speak(speakOutput)
+                    .reprompt(speakOutput) 
+                    .getResponse();
+            } else {
+                const speakOutput = No se encontró el dispositivo ${adviceName} asociado a tu cuenta.;
+                return handlerInput.responseBuilder
+                .speak(speakOutput)
+                .reprompt(speakOutput) // Repite la misma respuesta como reprompt
+                .getResponse();            }
+        } catch (err) {
+            console.error('Error al consultar DynamoDB o actualizar la sombra del dispositivo:', err);
+            const speakOutput = 'Hubo un error al intentar encender el ventilador. Intenta nuevamente.';
+            return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt(speakOutput) // Repite la misma respuesta como reprompt
+            .getResponse();        }
+    }
+};
 
 
 exports.handler = Alexa.SkillBuilders.custom()
@@ -614,7 +1072,6 @@ exports.handler = Alexa.SkillBuilders.custom()
         ShowerValveStateIntentHandler,
         StateCoolerIntentHandler,
         StateHeaterIntentHandler,
-        StateTemperatureEnviromentIntentHandler,
         StateTemperatureWaterIntentHandler,
         TurnOnCoolerIntentHandler,
         TurnOffCoolerIntentHandler,
@@ -628,6 +1085,8 @@ exports.handler = Alexa.SkillBuilders.custom()
         IntentReflectorHandler*/
         LaunchRequestHandler,
         SetDeviceIntentHandler,
+        StateTemperatureWaterIntentHandler,
+        StateTemperatureEnviromentIntentHandler,
         TurnOnVentiladorIntentHandler,
         TurnOffVentiladorIntentHandler,
         TurnOnIntentHandler,
@@ -638,7 +1097,12 @@ exports.handler = Alexa.SkillBuilders.custom()
         TurnOffHeaterIntentHandler,
         StateIntentHandler,
         StateCoolerIntentHandler,
-        StateHeaterIntentHandler 
+        StateHeaterIntentHandler,
+        /** shower**/
+        turnOnShowerHandler,
+        turnOffShowerHandler,
+
+        IntentReflectorHandler
     )
     .addErrorHandlers(
         ErrorHandler)

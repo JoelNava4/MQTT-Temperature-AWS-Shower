@@ -7,8 +7,6 @@
 #include "CoolerController.h"
 #include "HeaterController.h"
 
-const char* WIFI_SSID = "jota";
-const char* WIFI_PASS = "joelnava4";
 const char* MQTT_BROKER = "a1wpqxeafukdx9-ats.iot.us-east-1.amazonaws.com";
 const int MQTT_PORT = 8883;
 const char* CLIENT_ID = "ESP-32-SHORWER";
@@ -95,7 +93,7 @@ SuiiIbtNPz6hzAyFV4p7O4o1ORpuoBtQxshp3sFiJjNc7VR/FRHELA==
 -----END RSA PRIVATE KEY-----
 )KEY";
 
-WiFiConnection wifi(WIFI_SSID, WIFI_PASS);
+WiFiConnection wifi;
 MQTTHandler mqttHandler(MQTT_BROKER, MQTT_PORT, CLIENT_ID, UPDATE_TOPIC, UPDATE_DELTA_TOPIC);
 SensorDHT sensorDHT(DHT_PIN, DHT_TYPE, &mqttHandler, UPDATE_TOPIC);
 SensorDS18B20 sensorDS18B20(DS18B20_PIN, &mqttHandler, UPDATE_TOPIC);

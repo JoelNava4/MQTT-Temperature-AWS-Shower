@@ -1,15 +1,24 @@
 #include "WiFiConnection.h"
 
-WiFiConnection::WiFiConnection(const char* SSID, const char* PASSWORD) : SSID(SSID), PASSWORD(PASSWORD) {}
+WiFiConnection::WiFiConnection() {
+}
 
 void WiFiConnection::Connect() {
-    WiFi.begin(SSID, PASSWORD);
-    Serial.println("Connecting to WiFi...");
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
-    }
-    Serial.println("\nWiFi connected");
-    Serial.print("IP address: ");
-    Serial.println(WiFi.localIP());
+  const char* apName = "AutoConnectAP";
+  const char* apPassword = "password123";
+
+  Serial.println("Starting captive portal...");
+
+  if (!wifiManager.autoConnect(apName, apPassword)) {
+    Serial.println("Connection failed, restarting...");
+    delay(3000);
+    ESP.restart();
+  }
+
+  Serial.println("WiFi connected");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
 }
+
+
+
